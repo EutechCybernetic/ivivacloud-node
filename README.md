@@ -13,23 +13,19 @@ You need to have access to an iVivaCloud installation and have a valid api key.
 
 ## Usage
 
-	var iviva = require('ivivacloud-node');
-	var account = new iviva.Account('http://ivivacloud.url','apikey');
+	var iviva = require('ivivacloud');
+	var account = new iviva.Account('http://ivivacloud-url','apikey');
 
 	/* A sample service to execute */
 	account.executeService('System.AvailableDateFormats',{},function(data,err){
-		if (err != null) {
-			console.log('Received data:'  + data);
-		}
+	    if (err != null) {
+	        console.log('Received data:'  + data);
+	    }
 	});
 
 	var mb = new account.MessageBus();
 	mb.init(function(){
-		mb.subscribe('test',function(msg){
-			console.log('recieved test message:' + msg);
-		});
+	    mb.subscribe('test',function(channel,message){
+	        console.log('recieved test message:' + message);
+	    });
 	});
-
-
-
-
