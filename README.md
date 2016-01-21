@@ -1,7 +1,6 @@
 # ivivacloud-node
 
 A node.js helper library for accessing iVivaCloud
-A node.js Twilio helper library.
 
 
 # Getting Started
