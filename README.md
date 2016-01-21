@@ -13,7 +13,7 @@ You need to have access to an iVivaCloud installation and have a valid api key.
 
 ## Usage
 
-	var iviva = require('ivivacloud');
+	var iviva = require('ivivacloud-node');
 	var account = new iviva.Account('http://ivivacloud-url','apikey');
 
 	/* A sample service to execute */
