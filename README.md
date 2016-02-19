@@ -16,7 +16,7 @@ You need to have access to an iVivaCloud installation and have a valid api key.
 	var account = new iviva.Account('http://ivivacloud-url','apikey');
 
 	/* A sample service to execute */
-	account.executeService('System.AvailableDateFormats',{},function(data,err){
+	account.executeService('System.AvailableDateFormats',{},function(err,data){
 	    if (err != null) {
 	        console.log('Received data:'  + data);
 	    }
@@ -25,6 +25,6 @@ You need to have access to an iVivaCloud installation and have a valid api key.
 	var mb = new account.MessageBus();
 	mb.init(function(){
 	    mb.subscribe('test',function(channel,message){
-	        console.log('recieved test message:' + message);
+	        console.log('received test message:' + message);
 	    });
 	});
