@@ -1,113 +1,58 @@
 var http = require('http');
+var url = require('url');
 var querystring = require('querystring');
 var signalR = require('signalr-client');
-var self = null;
 
-function Account(hostserver,apikey){
+function Account(host,apiKey){
 
-	this.api_key = apikey;
-
-	this.hostserver = hostserver;
-
-	var temp = hostserver.toLowerCase().replace('https://','');
-
-	temp = temp.replace('http://','');
-
-	var arr = temp.split(':');
-
-	this.host = arr[0];
-
-	this.port_no = arr[1]; //nodejs wont throw error if arr[1] dosen't exist
-
-	this.last_result = "";
-
-	this.AccountURL = "";
-
-	self = this;
-
+	this.apiKey = apiKey;
+	this.host = host;
 }
 
 Account.prototype.executeService = function executeService(service,parameters,callback){
-
 	try{
 
-		var xstr = service.replace(':','/');
-
-		var serviceurl = xstr.replace('.','/');
-
-		parameters['apikey'] = this.api_key;
+		service = service.replace(':','/').replace('.','/');
+		var urlObj = url.parse(this.host);
 
 		var data = querystring.stringify(parameters);
 
 		var options = {
-
-		    host: this.host,
-		    
-		    port: this.port_no,
-		    
-		    path: '/api/'+serviceurl,
-		    
-		    method: 'POST',
-		    
-		    headers: {
-		    
-		        'Content-Type': 'application/x-www-form-urlencoded',
-		    
-		        'Content-Length': Buffer.byteLength(data),
-		    
-		        'Authentication': this.api_key
-		    
-		    }
-		
+			host: urlObj.hostname,
+			port: urlObj.port,
+			path: '/api/' + service,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'Content-Length': Buffer.byteLength(data),
+				'Authorization': this.apiKey
+			},
 		};
-
-
-		var req = http.request(options, function(res) {
-		    
-		    res.setEncoding('utf8');
-			
-			var str = '';
-
-			//another chunk of data has been recieved, so append it to `str`
-
-			res.on('data', function (chunk) {
-
-				str += chunk;
-
+		var result = '';
+		var req = http.request(options,function(res){
+			var status = res.statusCode;
+			res.setEncoding('utf8');
+			res.on('data',function(chunk){
+				result += chunk;
 			});
-
-			//the whole response has been recieved, so we just print it out here
-
-			res.on('end', function () {
-
-				console.log(str);
-
-				if (!!callback)
-
-					callback(str,null);
-
+			res.on('error',function(e){
+				callback(e,null);
 			});
-
-			res.on('error', function(){
-
-				console.log(str);
-
-				if (!!callback)
-
-					callback(null,str);
-
+			res.on('end',function(){
+				if (status >= 400) {
+					callback({message:result,status:status},null);
+				} else {
+				callback(null,result);
+				}
 			});
-
 		});
-
+		req.on('error',function(e){
+			callback(e,null);
+		});
 		req.write(data);
-		
 		req.end();
-
 	}catch(err){
-
-		callback(null,err);
-
+		callback(err,null);
 	}
 
 };
@@ -115,57 +60,40 @@ Account.prototype.executeService = function executeService(service,parameters,ca
 Account.prototype.MessageBus = function MessageBus(){
 
 	var client = null;
- 
+
  	var Hubs = ['GlobalHub'];
 
 	var subscriptions = {};
 
-	var signalRUrl = self.hostserver + '/signalR';
+	var signalRUrl = this.host + '/signalR';
 
-	var apikey = self.api_key;
+	var apikey = this.apiKey;
 
 	this.subscribe = function(channel,callback2){
-
 		subscriptions[channel] = callback2;
-
 		client.invoke(Hubs[0],'subscribe',apikey,channel);
-
 	};
 
 	this.broadcast = function(channel,message){
-	
 		client.invoke(Hubs[0],'broadcast',apikey,channel,message);
-	
 	};
 
 
 	this.init = function(callback){
-
 		client = new signalR.client(signalRUrl,Hubs,2,true);
-
 		client.start();
-
 		client.handlers.globalhub = { broadcast: function(channel,message){
-	
 			if(subscriptions[channel]!=null){
-
 				subscriptions[channel](channel,message);
-
 			}else{
-
 				console.log('err:'+channel);
 			}
-
 		}};
 
 		client.serviceHandlers.connected = function(connection) {
-
 			callback();
-
 		};
-
 	};
-
 }
 
 module.exports.Account = Account;
