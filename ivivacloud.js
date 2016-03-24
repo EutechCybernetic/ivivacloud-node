@@ -57,7 +57,7 @@ Account.prototype.executeService = function executeService(service,parameters,ca
 
 };
 
-Account.prototype.MessageBus = function MessageBus(){
+ function MessageBus(account){
 
 	var client = null;
 
@@ -65,9 +65,9 @@ Account.prototype.MessageBus = function MessageBus(){
 
 	var subscriptions = {};
 
-	var signalRUrl = this.host + '/signalR';
+	var signalRUrl = account.host + '/signalR';
 
-	var apikey = this.apiKey;
+	var apikey = account.apiKey;
 
 	this.subscribe = function(channel,callback2){
 		subscriptions[channel] = callback2;
@@ -97,3 +97,4 @@ Account.prototype.MessageBus = function MessageBus(){
 }
 
 module.exports.Account = Account;
+module.exports.MessageBus = MessageBus;

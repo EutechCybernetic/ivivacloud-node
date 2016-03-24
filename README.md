@@ -22,7 +22,7 @@ You need to have access to an iVivaCloud installation and have a valid api key.
 	    }
 	});
 
-	var mb = new account.MessageBus();
+	var mb = new iviva.MessageBus(account);
 	mb.init(function(){
 	    mb.subscribe('test',function(channel,message){
 	        console.log('received test message:' + message);
