@@ -14,13 +14,14 @@ Account.prototype.executeService = function executeService(service,parameters,ca
 
 		service = service.replace(':','/').replace('.','/');
 		var urlObj = url.parse(this.host);
+		if (urlObj.path == '/') urlObj.path = '';
 
 		var data = querystring.stringify(parameters);
 
 		var options = {
 			host: urlObj.hostname,
 			port: urlObj.port,
-			path: '/api/' + service,
+			path: urlObj.path + '/api/' + service,
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
